@@ -1,0 +1,70 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Local DSH Plugins",
+    "zh": "本地 DSH 插件"
+  },
+  "description": {
+    "en": "A hand-served index for in-development DSH bundles.",
+    "zh": "用于开发中 DSH 插件的手工索引。"
+  },
+  "metadata": {
+    "categories": {
+      "composer": {
+        "title": {
+          "en": "Composer",
+          "zh": "输入框"
+        }
+      }
+    },
+    "labels": {
+      "prompt": {
+        "title": {
+          "en": "Prompt",
+          "zh": "提示词"
+        }
+      }
+    }
+  },
+  "plugins": [
+    {
+      "name": "dsh-pa",
+      "title": {
+        "en": "Prompt Enhancer",
+        "zh": "提示词增强"
+      },
+      "description": {
+        "en": "A diamond button in the composer that rewrites your draft into a precise prompt, and puts the original back when clicked again.",
+        "zh": "输入框里的菱形按钮：把草稿改写成规范提示词，再点一次还原原始输入。"
+      },
+      "icon": "icon.svg",
+      "author": "dsh-pa",
+      "metadata": {
+        "category": "composer",
+        "labels": [
+          "prompt"
+        ],
+        "keywords": [
+          "prompt",
+          "enhance",
+          "composer",
+          "diamond",
+          "提示词",
+          "增强"
+        ]
+      },
+      "versions": [
+        {
+          "version": "0.4.2",
+          "publishTimestamp": 1761235200,
+          "source": {
+            "type": "npm"
+          },
+          "engines": {
+            "dsh": ">=0.2.1-rc.1 <0.3.0-0"
+          }
+        }
+      ]
+    }
+  ]
+}
