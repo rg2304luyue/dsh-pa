@@ -50,11 +50,11 @@ flowchart LR
 
 插件是一个 bundle、两个半边，遵循 dsh 插件约定：
 
-- **宿主半边**（`exports "."`，ESM，`index.js`）：声明 `Config` schema（schemastery，六个键都带范围、
-  默认值、描述），对行里传来的配置做归一化（缺键或手改过的值被钳制，而不是报错），并在
-  `ctx.effect` 内于共享 webserver 注册 `GET | HEAD | POST /api/dsh-pa/enhance`。`GET` 返回浏览器半边
-  需要的两个设置；`POST` 解析路由、用 `ctx.llm.stream` 流式改写，最终回 `{ ok, text, provider,
-  model }`。流在宿主侧消费完毕，浏览器只拿到一个 JSON 答复和结构化错误码。
+- **宿主半边**（`exports "."`，ESM，`index.js`）：声明 `Config` schema（手写的 standard-schema
+  `~standard` 校验器，六个键都带范围、默认值、描述），对行里传来的配置做归一化（缺键或手改过的值被钳制，
+  而不是报错），并在 `ctx.effect` 内于共享 webserver 注册 `GET | HEAD | POST /api/dsh-pa/enhance`。`GET`
+  返回浏览器半边需要的两个设置；`POST` 解析路由、用 `ctx.llm.stream` 流式改写，最终回 `{ ok, text,
+  provider, model }`。流在宿主侧消费完毕，浏览器只拿到一个 JSON 答复和结构化错误码。
 - **浏览器半边**（`exports "./client"`，`client.js`）：通过 `ctx.slots.inject` 把菱形注册进
   `conversation.input.right`，用标准 `useInput` selector hook 读草稿、用标准
   `inputActions.setDraft` 写回，按会话保存原文/增强文对，所有文案（中/英）走 harness locale 服务。
@@ -68,22 +68,22 @@ flowchart LR
 - 已在 **`0.2.1-rc.2`** 上端到端验证 —— Windows 11 的 Electron 桌面应用：加载器行挂载、路由返回真实
   模型结果、菱形在真实输入框里渲染，增强 → 还原 → 缓存再增强都在真窗口里跑通。
 - Node `>= 20`，供 `.tmp/` 下的离线冒烟脚本使用；插件本身没有构建步骤。
-- `@deepseek-ai/schemastery` 是本插件唯一的包依赖，由 `package.json` 的 `dependencies` 声明，用于
-  `Config` schema。它随 harness 一起发行，安装后的副本会从 profile 自己的依赖树里解析到它。
+- **没有任何包依赖。** `Config` 校验器是照 standard-schema 接口手写的，所以不需要从 profile 的依赖树里
+  解析任何东西：被 pnpm 剪枝过的 profile 和全新 profile 加载它的表现完全一致。
 
 | | |
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| 插件 | `0.4.2` |
+| 插件 | `0.4.3` |
 
 ## 安装
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.2.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.3.tgz
 
 # 然后在 DeepSeek Harness 里：
-plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.2.tgz 的绝对路径>
+plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.3.tgz 的绝对路径>
 ```
 
 **从 Git 源安装**（不需要 npm 包）：
@@ -126,9 +126,9 @@ plugin_manager  action=remove_bundle  target=dsh-pa
 
 ## 配置
 
-所有可调值都在插件的 `Config`（schemastery）里，无需改源码，配置可跨插件升级存活。bundle 已经插入了
-该行，所以请在你 profile 的**用户层**（`cordis.patch.yml`，在所有 bundle 层之后生效）追加一条**同 id** 的
-条目：
+所有可调值都在插件的 `Config`（手写 `~standard` schema）里，无需改源码，配置可跨插件升级存活。bundle
+已经插入了该行，所以请在你 profile 的**用户层**（`cordis.patch.yml`，在所有 bundle 层之后生效）追加一条
+**同 id** 的条目：
 
 ```yaml
 - id: dsh-pa
@@ -257,7 +257,7 @@ harness 凭据存储后重试。
 
 ```
 package.json        manifest：bundle patch、client 注入、dsh 兼容范围、
-                    一个依赖（@deepseek-ai/schemastery）用于 Config schema
+                    没有任何包依赖（Config 校验器是手写的）
 cordis.patch.yml    一条 insert 行（id: dsh-pa），携带 config: {}
 index.js            宿主半边：schema + apply(ctx, config)、同源端点、模型解析、流式改写
 client.js           浏览器半边：工具栏菱形、按会话保存的原文/增强文对、配置拉取、
@@ -289,7 +289,7 @@ node_modules/       供冒烟脚本 import index.js 的本地副本（永不打�
 | Locale 命名空间 | `dsh-pa` |
 | 样式元素 | `style[data-plugin="dsh-pa"]`，所有类名以 `dsh-pa-` 为前缀 |
 | 主题 token | 颜色、圆角、焦点环取自公开的 `--dsw-*` token，每个都带字面 fallback；不复用 harness 的 CSS 类 |
-| 依赖关系 | 没有其它插件依赖本插件；本插件不依赖任何其它插件（唯一的包依赖是 `@deepseek-ai/schemastery`，用于 `Config` schema） |
+| 依赖关系 | 没有其它插件依赖本插件；本插件也不依赖任何其它插件 —— 包本身不声明任何依赖 |
 
 ## 市场索引
 
@@ -329,8 +329,8 @@ node_modules/       供冒烟脚本 import index.js 的本地副本（永不打�
   没有构建步骤；只有「根本无法从源码安装」时才必须挂 Release `.tgz`。
 - 仓库根的 `screenshots.json` 列出 `docs/verification.png` 与 `docs/verification-shortcuts.png`，路径相对
   该文件本身，市场按此读取。
-- `@deepseek-ai/schemastery` 放在 `peerDependencies` 而不是 `dependencies`，对应列表对官方 `@deepseek-ai/*`
-  包的建议。插件照常加载：安装副本上 `Config.listConfigs` 仍把该行报为 `schema`，六个键齐全。
+- 包不声明任何依赖，也不声明 peer 依赖，所以条目里不需要「安装顺序」这类附加说明：`Config` 校验器是
+  手写的，插件加载不依赖 profile 树里的任何东西。
 - 另有两项属于仓库而非条目：仓库需创建满一天，并打上 `dsh-plugin` topic。
 
 ## 开发
@@ -390,8 +390,9 @@ DeepSeek Harness `0.2.1-rc.2`（Electron，Windows 11），profile `desktop`：
 - 守卫实测：不带 `x-dsh-pa` 头 → `403 FORBIDDEN`；空草稿 → `400 EMPTY_DRAFT`。
 - 结构化草稿让菱形置灰、点击无反应（见 `docs/verification-shortcuts.png`）；还原后对同一草稿再点，
   不到一秒返回完全相同的文本。
-- `Config` 是活的：加载器把该行报告为 `schema`，六个键的默认值、范围、描述齐全，同时证明声明
-  `@deepseek-ai/schemastery` 依赖在安装副本上可以解析。
+- `Config` 是活的：该行被接受并钳制（`GET` 返回实际生效的值）；schema 不需要任何库 ——
+  `Config.listConfigs` 把它报为 `unsupported`，正是因为这里的 `Config` 是手写 `~standard` schema
+  而不是 schemastery schema，这就是「零包依赖」的代价。
 - `GET /api/dsh-pa/enhance` 返回 `{ ok: true, config: { structuredMinChars, cacheTtlMs } }`；其它动词得到
   `405` 与 `allow: GET, HEAD, POST`，不带头得到 `403`。
 

@@ -54,8 +54,9 @@ flowchart LR
 
 The plugin is one bundle with two halves, following the dsh plugin conventions:
 
-- **Host half** (`exports "."`, ESM, `index.js`): declares the `Config` schema (schemastery — six
-  keys with ranges, defaults, and descriptions), normalizes whatever the row carries (a partial or
+- **Host half** (`exports "."`, ESM, `index.js`): declares the `Config` schema (a hand-written
+  standard-schema `~standard` validator over six keys with ranges, defaults, and descriptions),
+  normalizes whatever the row carries (a partial or
   hand-edited row is clamped, never rejected), and registers `GET` / `HEAD` / `POST
   /api/dsh-pa/enhance` on the shared webserver inside a `ctx.effect`. `GET` returns the two
   settings the browser half needs; `POST` resolves a route, streams the rewrite through
@@ -77,23 +78,23 @@ The plugin is one bundle with two halves, following the dsh plugin conventions:
   the loader row mounts, the route answers a real model result, the diamond renders in the live
   composer, and enhance → restore → cached re-enhance all ran in the real window.
 - Node `>= 20` for the offline smoke scripts in `.tmp/`. The plugin itself has no build step.
-- `@deepseek-ai/schemastery` is the plugin's only package dependency, declared in `package.json`
-  for the `Config` schema. It ships with the harness, and the installed copy resolves it from the
-  profile's own tree.
+- **No package dependencies.** The `Config` validator is hand-written against the standard-schema
+  interface, so nothing has to resolve from the profile's dependency tree and a pruned profile
+  loads the plugin exactly like a fresh one.
 
 | | |
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| Plugin | `0.4.2` |
+| Plugin | `0.4.3` |
 
 ## Install
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.2.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.3.tgz
 
 # then, in DeepSeek Harness:
-plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.2.tgz>
+plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.3.tgz>
 ```
 
 **From a Git source** — no npm package needed:
@@ -146,10 +147,10 @@ Nothing is sent to the conversation until you press send yourself.
 
 ## Configuration
 
-Every tunable lives in the plugin's `Config` (schemastery), so it can change without editing the
-source and the setting survives plugin upgrades. The bundle already inserts the row, so add an
-entry **with the same id** to your profile's user layer (`cordis.patch.yml`), which applies after
-every bundle layer:
+Every tunable lives in the plugin's `Config` (a hand-written `~standard` schema), so it can change
+without editing the source and the setting survives plugin upgrades. The bundle already inserts the
+row, so add an entry **with the same id** to your profile's user layer (`cordis.patch.yml`), which
+applies after every bundle layer:
 
 ```yaml
 - id: dsh-pa
@@ -294,7 +295,7 @@ The endpoint is served by your own dsh host and reachable **only from this machi
 
 ```
 package.json        manifest: bundle patch, client injection, dsh compatibility ranges,
-                    one dependency (@deepseek-ai/schemastery) for the Config schema
+                    no package dependencies (the Config validator is hand-written)
 cordis.patch.yml    one insert row (id: dsh-pa) carrying config: {}
 index.js            host half: schema + apply(ctx, config), same-origin endpoint,
                     model resolution, streaming rewrite
@@ -327,7 +328,7 @@ Not shipped: `.tmp/`, `node_modules/`, `market/`, `docs/`. The tarball contains 
 | Locale namespace | `dsh-pa` |
 | Style element | `style[data-plugin="dsh-pa"]`, every class name prefixed `dsh-pa-` |
 | Theme tokens | colour, radius, and focus ring come from published `--dsw-*` tokens, each with a literal fallback; no harness CSS class is reused |
-| Dependencies | no other plugin depends on this one, and this one depends on no other plugin (its single package dependency is `@deepseek-ai/schemastery`, for the `Config` schema) |
+| Dependencies | no other plugin depends on this one, and this one depends on no other plugin — the package declares no dependencies at all |
 
 ## Market index
 
@@ -372,9 +373,9 @@ all three.
   the source could not be installed at all.
 - `screenshots.json` at the repository root lists `docs/verification.png` and
   `docs/verification-shortcuts.png`; paths are relative to that file, which is how storefronts read them.
-- `@deepseek-ai/schemastery` sits in `peerDependencies`, not `dependencies`, following the list's advice
-  for official `@deepseek-ai/*` packages. The plugin still loads: `Config.listConfigs` reports the row as
-  `schema` with all six keys on the installed copy.
+- The package declares **no dependencies and no peer dependencies**, so the entry needs no
+  install-order caveat: the `Config` validator is hand-written, and nothing has to resolve from the
+  profile's tree for the plugin to load.
 - Two requirements live in the repository rather than the entry: the repository must be at least one day
   old, and it must carry the `dsh-plugin` topic.
 
@@ -445,9 +446,10 @@ DeepSeek Harness `0.2.1-rc.2` (Electron, Windows 11), profile `desktop`:
 - A structured draft leaves the diamond dimmed and a click changes nothing
   (`docs/verification-shortcuts.png`); pressing the same draft again after a restore returns the
   identical text in under half a second.
-- `Config` is live: the loader reports the row as `schema` with all six keys, defaults, ranges, and
-  descriptions, which also proves the declared `@deepseek-ai/schemastery` dependency resolves on
-  the installed copy.
+- `Config` is live: the row is accepted and clamped (`GET` reports the applied values), and the
+  schema needs no library — `Config.listConfigs` reports the row as `unsupported` precisely because
+  this `Config` is a hand-written `~standard` schema rather than a schemastery schema, which is the
+  price of shipping zero package dependencies.
 - `GET /api/dsh-pa/enhance` returns `{ ok: true, config: { structuredMinChars, cacheTtlMs } }`; the
   route answers `405` with `allow: GET, HEAD, POST` for other verbs and `403` without the header.
 

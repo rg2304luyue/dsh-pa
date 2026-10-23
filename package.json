@@ -1,6 +1,6 @@
 {
   "name": "dsh-pa",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "private": true,
   "type": "module",
   "description": "Prompt enhancer for the DeepSeek Harness composer: rewrite a draft into a precise prompt, click again to restore it.",
@@ -26,9 +26,6 @@
     "README.zh-CN.md",
     "LICENSE"
   ],
-  "peerDependencies": {
-    "@deepseek-ai/schemastery": "^3.18.5"
-  },
   "engines": {
     "node": ">=20",
     "dsh": ">=0.2.1-rc.1 <0.3.0-0"

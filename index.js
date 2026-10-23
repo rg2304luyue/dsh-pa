@@ -14,8 +14,6 @@
  * overlapping any other plugin's route.
  */
 
-import Schema from '@deepseek-ai/schemastery';
-
 /** Endpoint owned by this plugin; no other plugin registers this path. */
 const ENDPOINT = '/api/dsh-pa/enhance';
 /** Plugin-scoped request header, checked before the body is read. */
@@ -35,40 +33,54 @@ const DEFAULTS = {
 export const name = 'dsh-pa';
 export const inject = ['webServer', 'llm'];
 
+/** One row-config field: a renderable descriptor plus its help text. */
+const field = (type, description) => ({ type, meta: { volatile: true, description } });
+
+function configObject(value) {
+  if (value === void 0) return {};
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('config must be an object');
+  }
+  return value;
+}
+
 /**
  * Every tunable value lives here, so users change behaviour in their own patch layer
  * instead of editing the package, and an upgrade keeps their choices.
+ *
+ * The validator is a hand-written standard-schema (`~standard`) instead of a schema
+ * library: `cordis` only needs `validate()` on the row config, and the settings UI only
+ * needs the field descriptors. That keeps the plugin free of package dependencies, so it
+ * loads in any profile whether or not the harness dependency tree has been pruned.
  */
-export const Config = Schema.object({
-  model: Schema.string()
-    .default(DEFAULTS.model)
-    .description('Provider or provider/model used for the rewrite, e.g. "deepseek-official/deepseek-flash". Empty follows the session\'s selected model.'),
-  temperature: Schema.number()
-    .min(0)
-    .max(2)
-    .default(DEFAULTS.temperature)
-    .description('Sampling temperature for the rewrite. 0 keeps the output stable.'),
-  timeoutMs: Schema.number()
-    .min(5_000)
-    .max(600_000)
-    .default(DEFAULTS.timeoutMs)
-    .description('Abort one rewrite after this many milliseconds.'),
-  maxDraftChars: Schema.number()
-    .min(200)
-    .max(200_000)
-    .default(DEFAULTS.maxDraftChars)
-    .description('Reject drafts longer than this many characters.'),
-  structuredMinChars: Schema.number()
-    .min(0)
-    .max(20_000)
-    .default(DEFAULTS.structuredMinChars)
-    .description('Drafts at least this long are treated as finished prompts and are not sent. 0 disables only the length check.'),
-  cacheTtlMs: Schema.number()
-    .min(0)
-    .max(3_600_000)
-    .default(DEFAULTS.cacheTtlMs)
-    .description('Reuse an identical result for this many milliseconds instead of paying again. 0 disables reuse.'),
-});
+export const Config = {
+  type: 'object',
+  meta: {},
+  dict: {
+    model: field('string', 'Provider or provider/model used for the rewrite, e.g. "deepseek-official/deepseek-flash". Empty follows the session\'s selected model.'),
+    temperature: field('number', 'Sampling temperature for the rewrite, 0-2. 0 keeps the output stable.'),
+    timeoutMs: field('number', 'Abort one rewrite after this many milliseconds, 5000-600000.'),
+    maxDraftChars: field('number', 'Reject drafts longer than this many characters, 200-200000.'),
+    structuredMinChars: field('number', 'Drafts at least this long are treated as finished prompts and are not sent, 0-20000. 0 disables only the length check.'),
+    cacheTtlMs: field('number', 'Reuse an identical result for this many milliseconds instead of paying again, 0-3600000. 0 disables reuse.'),
+  },
+  // The harness strips volatile metadata from its validation copy, so hand it a detached
+  // tree rather than the live descriptors.
+  toJSON() {
+    return JSON.parse(JSON.stringify({ ...this, toJSON: void 0 }));
+  },
+  '~standard': {
+    version: 1,
+    vendor: 'dsh-pa',
+    validate(value) {
+      try {
+        return { value: normalizeConfig(configObject(value)) };
+      } catch (error) {
+        return { issues: [{ message: error instanceof Error ? error.message : String(error) }] };
+      }
+    },
+  },
+};
 
 const SYSTEM_PROMPT = [
   'You rewrite one composer draft into a ready-to-send prompt for a coding agent. The draft',
@@ -104,8 +116,7 @@ const SYSTEM_PROMPT = [
 export function apply(ctx, rawConfig) {
   // `Config` already validated the row; normalizing again keeps a hand-edited patch
   // layer (or an older row without `config`) on the same, clamped values.
-  const config = normalizeConfig(rawConfig);
-  const webServer = ctx.webServer;
+  const config = normalizeConfig(rawConfig);  const webServer = ctx.webServer;
   if (webServer === void 0 || typeof webServer.register !== 'function') {
     console.warn('[dsh-pa] webServer service is unavailable; the prompt enhancer endpoint was not registered.');
     return;
@@ -122,7 +133,8 @@ export function apply(ctx, rawConfig) {
 
 /**
  * Clamp a raw row config into the values the handler uses. Missing or malformed fields
- * fall back to `DEFAULTS` instead of disabling the plugin.
+ * fall back to `DEFAULTS` instead of disabling the plugin. Idempotent: `Config` validates
+ * with it, and `apply` runs it again so an older row without `config` normalizes the same.
  */
 function normalizeConfig(rawConfig) {
   const source = rawConfig !== null && typeof rawConfig === 'object' ? rawConfig : {};
@@ -131,8 +143,10 @@ function normalizeConfig(rawConfig) {
     if (!Number.isFinite(parsed)) return fallback;
     return Math.min(Math.max(parsed, min), max);
   };
+  const model = typeof source.model === 'string' ? source.model.trim() : '';
   return {
-    target: parseTarget(source.model),
+    model,
+    target: parseTarget(model),
     temperature: number(source.temperature, DEFAULTS.temperature, 0, 2),
     timeoutMs: number(source.timeoutMs, DEFAULTS.timeoutMs, 5_000, 600_000),
     maxDraftChars: number(source.maxDraftChars, DEFAULTS.maxDraftChars, 200, 200_000),
