@@ -1,4 +1,4 @@
-# dsh-pa [![license](https://img.shields.io/badge/license-MIT-blue)](./package.json) [![dsh](https://img.shields.io/badge/dsh-0.2.1--rc.1%20..%20%3C0.3.0-blue)](./package.json) [![repo](https://img.shields.io/badge/github-rg2304luyue%2Fdsh--pa-blue)](https://github.com/rg2304luyue/dsh-pa)
+# dsh-pa [![license](https://img.shields.io/badge/license-MIT-blue)](./package.json) [![dsh](https://img.shields.io/badge/dsh-0.2.1--rc.1%20..%20%3C0.3.0-blue)](./package.json) [![repo](https://img.shields.io/badge/github-rg2304luyue%2Fdsh--pa-blue)](https://github.com/rg2304luyue/dsh-pa) [![topic](https://img.shields.io/badge/topic-dsh--plugin-blue)](https://github.com/topics/dsh-plugin)
 
 **Prompt enhancement for the [DeepSeek Harness](https://github.com/deepseek-ai) web GUI** — one
 click turns a rough composer draft into a well-structured prompt: an explicit goal, the
@@ -95,6 +95,16 @@ npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.2.tgz
 # then, in DeepSeek Harness:
 plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.2.tgz>
 ```
+
+**From a Git source** — no npm package needed:
+
+```bash
+dsh plugin --profile desktop add github:rg2304luyue/dsh-pa
+```
+
+Use the profile you run: `desktop` for this Electron app, `web` for `dsh web`. The bundle declares
+`dsh.bundle.patch`, so the loader adds the `dsh-pa` row by itself. Or add the market index described
+below under **Discover** and install from there.
 
 Install from the packed tarball, **not** from this folder. A profile reached through an NTFS
 junction (`~/.dsh` → another drive) resolves pnpm's relative `link:` symlink against the junction
@@ -293,11 +303,12 @@ client.js           client half: toolbar diamond, per-session original/enhanced 
 locale/en.json      meta.title / meta.description for dshmarket
 locale/zh.json      Chinese market copy
 icon.svg            original icon (691 B)
-market/index.json   format-1 market index entry
+docs/market/index.json  format-1 market index, served by GitHub Pages
 README.md           this file
 README.zh-CN.md     the same document in Simplified Chinese
 LICENSE             MIT
 docs/*.png          evidence screenshots embedded above
+docs/market/icon.svg  the icon the index resolves next to itself
 .tmp/               offline smoke scripts and window-capture helpers (never packed)
 node_modules/       local copies so the smoke scripts can import index.js (never packed)
 ```
@@ -320,15 +331,28 @@ Not shipped: `.tmp/`, `node_modules/`, `market/`, `docs/`. The tarball contains 
 
 ## Market index
 
-`market/index.json` is a format-1 plugin market index entry for this bundle. It has been checked
-against the harness's own validator (`@deepseek-ai/dsh-plugin-market-index`):
-`parseMarketIndex(document, indexUrl)` accepts it and turns the relative `icon` into an absolute
-URL under that index URL, and `marketInstallTarget(name, version)` returns `dsh-pa@0.4.2`.
+`docs/market/index.json` is a format-1 index for this bundle, meant to be served by GitHub Pages
+straight out of this repository. `docs/market/icon.svg` sits beside it, so the relative `icon`
+resolves to `https://rg2304luyue.github.io/dsh-pa/market/icon.svg`.
 
-Serve it over http(s) and add that URL in **插件市场 → 索引源** (the market accepts only canonical
-`http:`/`https:` URLs). The entry becomes installable once `dsh-pa@0.4.2` exists on the registry it
-points at; for a git source, replace `source` with
-`{ "type": "git", "url": "https://github.com/rg2304luyue/dsh-pa", "commit": "<40 hex>", "path": "" }`.
+The single version installs from Git, pinned to a commit, so no npm package is involved:
+
+```json
+"source": { "type": "git", "url": "https://github.com/rg2304luyue/dsh-pa", "commit": "<40-hex>" }
+```
+
+Checked against the harness's own validator (`@deepseek-ai/dsh-plugin-market-index`):
+`parseMarketIndex` accepts the document, and `marketInstallTarget` returns
+`git+https://github.com/rg2304luyue/dsh-pa.git#<commit>`.
+
+Enable **Settings → Pages → Deploy from a branch → `main` / `/docs`**, then add
+`https://rg2304luyue.github.io/dsh-pa/market/index.json` in **插件市场 → 发现 → 添加索引源**. The
+market takes only canonical `http:`/`https:` URLs and follows no redirects, so serve the file at its
+final address.
+
+A pinned commit means every release needs two pushes: bump `package.json` and push, then write the
+new commit SHA and `publishTimestamp` into `docs/market/index.json` and push again. A stale pin keeps
+installing the older code, silently. There is also no upgrade path in the market: remove, then install.
 
 ## Awesome list entry
 
@@ -371,7 +395,7 @@ The smoke scripts fake the webserver, the request/response pair, the LLM stream,
 slot registry, so they run with no harness attached — they are the only automated coverage.
 Behaviour inside the real renderer was checked by driving the application window and sampling the
 button's rendered pixels, which is why `docs/` carries screenshots. Release loop: bump
-`package.json` (and the version strings here, in `README.zh-CN.md`, and in `market/index.json`),
+`package.json` (and the version strings here, in `README.zh-CN.md`, and in `docs/market/index.json`),
 `npm pack`, install the tarball, re-run both smoke scripts, then re-check one live enhance.
 
 ## FAQ

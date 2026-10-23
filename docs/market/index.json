@@ -1,12 +1,12 @@
 {
   "format": 1,
   "title": {
-    "en": "Local DSH Plugins",
-    "zh": "本地 DSH 插件"
+    "en": "dsh-pa plugin index",
+    "zh": "dsh-pa 插件索引"
   },
   "description": {
-    "en": "A hand-served index for in-development DSH bundles.",
-    "zh": "用于开发中 DSH 插件的手工索引。"
+    "en": "A static index served from GitHub Pages. Add its URL under Discover to install dsh-pa.",
+    "zh": "部署在 GitHub Pages 上的静态索引。在「发现」里添加它的 URL 即可安装 dsh-pa。"
   },
   "metadata": {
     "categories": {
@@ -38,7 +38,11 @@
         "zh": "输入框里的菱形按钮：把草稿改写成规范提示词，再点一次还原原始输入。"
       },
       "icon": "icon.svg",
-      "author": "dsh-pa",
+      "author": "rg2304luyue",
+      "homepage": "https://github.com/rg2304luyue/dsh-pa#readme",
+      "repository": {
+        "url": "https://github.com/rg2304luyue/dsh-pa"
+      },
       "metadata": {
         "category": "composer",
         "labels": [
@@ -56,9 +60,11 @@
       "versions": [
         {
           "version": "0.4.2",
-          "publishTimestamp": 1761235200,
+          "publishTimestamp": 1792746181,
           "source": {
-            "type": "npm"
+            "type": "git",
+            "url": "https://github.com/rg2304luyue/dsh-pa",
+            "commit": "eddcb5094b6e7b5ca5cdc2928b35beeddd7164e9"
           },
           "engines": {
             "dsh": ">=0.2.1-rc.1 <0.3.0-0"

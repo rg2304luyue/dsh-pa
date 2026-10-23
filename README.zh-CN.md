@@ -1,4 +1,4 @@
-# dsh-pa [![license](https://img.shields.io/badge/license-MIT-blue)](./package.json) [![dsh](https://img.shields.io/badge/dsh-0.2.1--rc.1%20..%20%3C0.3.0-blue)](./package.json) [![repo](https://img.shields.io/badge/github-rg2304luyue%2Fdsh--pa-blue)](https://github.com/rg2304luyue/dsh-pa)
+# dsh-pa [![license](https://img.shields.io/badge/license-MIT-blue)](./package.json) [![dsh](https://img.shields.io/badge/dsh-0.2.1--rc.1%20..%20%3C0.3.0-blue)](./package.json) [![repo](https://img.shields.io/badge/github-rg2304luyue%2Fdsh--pa-blue)](https://github.com/rg2304luyue/dsh-pa) [![topic](https://img.shields.io/badge/topic-dsh--plugin-blue)](https://github.com/topics/dsh-plugin)
 
 **DeepSeek Harness Web 界面的提示词增强插件** —— 点一下，把输入框里随口写的草稿变成结构清楚的
 提示词：明确的目标、草稿隐含的要求、收尾的输出预期。原意不变、不无中生有，原始草稿永远一键可回。
@@ -85,6 +85,15 @@ npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.2.tgz
 # 然后在 DeepSeek Harness 里：
 plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.2.tgz 的绝对路径>
 ```
+
+**从 Git 源安装**（不需要 npm 包）：
+
+```bash
+dsh plugin --profile desktop add github:rg2304luyue/dsh-pa
+```
+
+profile 名按你实际运行的来：这个 Electron 应用是 `desktop`，`dsh web` 是 `web`。bundle 声明了
+`dsh.bundle.patch`，加载器会自己加 `dsh-pa` 行。也可以在**发现**里添加下文的索引源，从那里安装。
 
 请用打好的 tarball 安装，**不要**直接指向本目录。若 profile 位于 NTFS junction 之下（`~/.dsh` 指向
 另一块盘），pnpm 建出的相对 `link:` 软链会被按 junction 拼写解析，加载器找不到包并报
@@ -256,11 +265,12 @@ client.js           浏览器半边：工具栏菱形、按会话保存的原文
 locale/en.json      dshmarket 用的 meta.title / meta.description
 locale/zh.json      中文市场文案
 icon.svg            原创图标（691 B）
-market/index.json   format-1 市场索引条目
+docs/market/index.json  format-1 市场索引（由 GitHub Pages 提供）
 README.md           英文主文档
 README.zh-CN.md     本文档
 LICENSE             MIT
 docs/*.png          上文嵌入的证据截图
+docs/market/icon.svg  索引同目录下的图标
 .tmp/               离线冒烟脚本与窗口截图辅助脚本（永不打包）
 node_modules/       供冒烟脚本 import index.js 的本地副本（永不打包）
 ```
@@ -283,13 +293,25 @@ node_modules/       供冒烟脚本 import index.js 的本地副本（永不打�
 
 ## 市场索引
 
-`market/index.json` 是本 bundle 的 format-1 插件市场索引条目，已用 harness 自带的校验器
-（`@deepseek-ai/dsh-plugin-market-index`）核对过：`parseMarketIndex(document, indexUrl)` 接受它，并把相对的
-`icon` 解析成该索引 URL 下的绝对地址；`marketInstallTarget(name, version)` 返回 `dsh-pa@0.4.2`。
+`docs/market/index.json` 是本 bundle 的 format-1 索引，用 GitHub Pages 直接从本仓库发布。`docs/market/icon.svg`
+与它同目录，所以相对的 `icon` 解析成 `https://rg2304luyue.github.io/dsh-pa/market/icon.svg`。
 
-把它放在 http(s) 上，在**插件市场 → 索引源**里填该 URL（市场只接受规范的 `http:`/`https:` 地址）。
-当它指向的 registry 上存在 `dsh-pa@0.4.2` 时条目即可安装；若走 git 源，把 `source` 换成
-`{ "type": "git", "url": "https://github.com/rg2304luyue/dsh-pa", "commit": "<40 hex>", "path": "" }`。
+唯一一个版本走 Git 源并钉住 commit，不需要 npm 包：
+
+```json
+"source": { "type": "git", "url": "https://github.com/rg2304luyue/dsh-pa", "commit": "<40 位十六进制>" }
+```
+
+已用 harness 自带的校验器（`@deepseek-ai/dsh-plugin-market-index`）核对：`parseMarketIndex` 接受该文档，
+`marketInstallTarget` 返回 `git+https://github.com/rg2304luyue/dsh-pa.git#<commit>`。
+
+打开 **Settings → Pages → Deploy from a branch → `main` / `/docs`**，然后在**插件市场 → 发现 → 添加索引源**
+里填 `https://rg2304luyue.github.io/dsh-pa/market/index.json`。市场只接受规范的 `http:`/`https:` 地址，且
+不跟随重定向，所以索引必须直接可访问。
+
+钉 commit 意味着每次发版要推两次：先升 `package.json` 并推送，再把新的 commit SHA 与 `publishTimestamp`
+写进 `docs/market/index.json` 再推一次。钉住的 commit 过期时，市场会静默安装旧代码。另外市场没有升级通道：
+只能先卸载再安装。
 
 ## 收录条目（awesome-dsh-plugin）
 
@@ -325,7 +347,7 @@ npm pack --pack-destination .tmp/dist  # 然后安装 tarball（必须先升版�
 
 冒烟脚本伪造了 webserver、请求/响应对、LLM 流、React 与 slot 注册表，因此脱离 harness 也能跑——它们是
 唯一的自动化覆盖。真实渲染器里的行为是靠驱动应用窗口、采样按钮渲染像素来确认的，这也是 `docs/` 里有
-截图的原因。发版流程：升 `package.json`（以及本文、`README.md`、`market/index.json` 里的版本号）→
+截图的原因。发版流程：升 `package.json`（以及本文、`README.md`、`docs/market/index.json` 里的版本号）→
 `npm pack` → 安装 tarball → 重跑两个冒烟脚本 → 在真窗口里再验一次增强。
 
 ## 常见问题
