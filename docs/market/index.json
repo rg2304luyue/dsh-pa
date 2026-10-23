@@ -59,12 +59,12 @@
       },
       "versions": [
         {
-          "version": "0.4.2",
-          "publishTimestamp": 1792746181,
+          "version": "0.4.3",
+          "publishTimestamp": 1792747800,
           "source": {
             "type": "git",
             "url": "https://github.com/rg2304luyue/dsh-pa",
-            "commit": "eddcb5094b6e7b5ca5cdc2928b35beeddd7164e9"
+            "commit": "4e061ebff82fc2269acfbd886be399aeffb9ac01"
           },
           "engines": {
             "dsh": ">=0.2.1-rc.1 <0.3.0-0"
