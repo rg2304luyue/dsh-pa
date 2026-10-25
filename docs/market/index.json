@@ -64,7 +64,7 @@
           "source": {
             "type": "git",
             "url": "https://github.com/rg2304luyue/dsh-pa",
-            "commit": "4e061ebff82fc2269acfbd886be399aeffb9ac01"
+            "commit": "a8c6f10d0ccdf0415289c68cddaba03bf761b2d5"
           },
           "engines": {
             "dsh": ">=0.2.1-rc.1 <0.3.0-0"
