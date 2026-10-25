@@ -1,6 +1,6 @@
 {
   "name": "dsh-pa",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "private": true,
   "type": "module",
   "description": "输入框里的菱形按钮：一键把草稿改写成规范提示词，再点一次还原原始输入（DeepSeek Harness Web 界面插件）",

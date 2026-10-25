@@ -75,15 +75,15 @@ flowchart LR
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| 插件 | `0.4.5` |
+| 插件 | `0.4.6` |
 
 ## 安装
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.5.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.6.tgz
 
 # 然后在 DeepSeek Harness 里：
-plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.5.tgz 的绝对路径>
+plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.6.tgz 的绝对路径>
 ```
 
 **从 Git 源安装**（不需要 npm 包）：
@@ -159,6 +159,11 @@ plugin_manager  action=remove_bundle  target=dsh-pa
 **何时生效：** `model`、`temperature`、`timeoutMs`、`maxDraftChars` 每次请求读取，改动立即生效；
 `structuredMinChars` 与 `cacheTtlMs` 由浏览器半边在按钮挂载时从 `GET /api/dsh-pa/enhance`（同一端点、
 同一套校验）读取，因此对之后挂载的按钮生效——刷新或新会话。
+
+**为什么每个字段都带 `toJSON()`：** 设置页给**每个** volatile 节点生成表单，不只根节点——它内部调用
+`volatileForm` 逐个下钻，对每个 `meta.volatile` 的子节点执行 `new z(child.toJSON())`。手写 schema 的子节点
+若没有自己的 `toJSON()`，整条 `settings/describe` RPC 会抛 `schema.toJSON is not a function`，宿主 welcome
+流程随之失败（0.4.5 的真实故障，0.4.6 修复并加了回归断言）。
 
 ## 内置改写策略
 

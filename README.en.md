@@ -86,15 +86,15 @@ The plugin is one bundle with two halves, following the dsh plugin conventions:
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| Plugin | `0.4.5` |
+| Plugin | `0.4.6` |
 
 ## Install
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.5.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.6.tgz
 
 # then, in DeepSeek Harness:
-plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.5.tgz>
+plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.6.tgz>
 ```
 
 **From a Git source** — no npm package needed:
@@ -183,6 +183,12 @@ first provider and model `ctx.llm` reports. If none of them resolves a route, th
 request, so they take effect immediately. `structuredMinChars` and `cacheTtlMs` are read by the
 browser half when the button mounts (from `GET /api/dsh-pa/enhance`, the same endpoint, same
 fences), so they apply to a button that mounts afterwards — a reload or a new session.
+
+**Why every field carries its own `toJSON()`:** the settings page builds a form for *every* volatile
+node, not just the root — it walks `volatileForm` and calls `new z(child.toJSON())` on each child whose
+`meta.volatile` is set. A hand-written schema whose children lack `toJSON()` makes the whole
+`settings/describe` RPC throw `schema.toJSON is not a function`, and the host welcome flow fails with it
+(the real 0.4.5 failure; fixed in 0.4.6, with a regression assertion in the offline smoke).
 
 ## The built-in enhancement strategy
 

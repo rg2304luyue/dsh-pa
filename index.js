@@ -33,8 +33,22 @@ const DEFAULTS = {
 export const name = 'dsh-pa';
 export const inject = ['webServer', 'llm'];
 
-/** One row-config field: a renderable descriptor plus its help text. */
-const field = (type, description) => ({ type, meta: { volatile: true, description } });
+/**
+ * One row-config field: a renderable descriptor plus its help text.
+ *
+ * The harness settings form serializes every volatile node it walks, not only the
+ * root: `volatileForm` hands each such child to `plainSchema`, which calls
+ * `child.toJSON()` and then deletes `meta.volatile` on the result. A descriptor
+ * without its own `toJSON` therefore fails the whole `settings.describe` RPC, so
+ * each field answers with a detached copy rather than the live descriptor.
+ */
+const field = (type, description) => ({
+  type,
+  meta: { volatile: true, description },
+  toJSON() {
+    return { type: this.type, meta: { ...this.meta } };
+  },
+});
 
 function configObject(value) {
   if (value === void 0) return {};

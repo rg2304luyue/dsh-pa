@@ -59,8 +59,8 @@
       },
       "versions": [
         {
-          "version": "0.4.5",
-          "publishTimestamp": 1792912959,
+          "version": "0.4.6",
+          "publishTimestamp": 1792920199,
           "source": {
             "type": "git",
             "url": "https://github.com/rg2304luyue/dsh-pa",
