@@ -343,17 +343,22 @@ node_modules/       供冒烟脚本 import index.js 的本地副本（永不打�
 没有构建步骤：宿主半边是纯 ESM，浏览器半边是单个 `window.__ModuleLoader__.load({ id, factory })` 脚本。
 
 ```bash
-node --check index.js                  # 宿主半边语法
-node --check client.js                 # 浏览器半边语法
-node .tmp/smoke-host.mjs               # 路由：动词、围栏、上限、配置钳制   -> HOST_SMOKE_OK
-node .tmp/smoke-client.cjs             # 组件：闸门、文案、缓存、配置拉取   -> CLIENT_SMOKE_OK
+node --check index.js               # 宿主半边语法
+node --check client.js              # 浏览器半边语法
+node test/smoke-config.mjs          # 配置：默认值、钳制、每个字段可序列化 -> CONFIG_SMOKE_OK
+node test/smoke-host.mjs            # 路由：动词、围栏、上限、配置钳制     -> HOST_SMOKE_OK
+node test/smoke-client.cjs          # 组件：闸门、文案、缓存、配置拉取     -> CLIENT_SMOKE_OK
 npm pack --pack-destination .tmp/dist  # 然后安装 tarball（必须先升版本）
 ```
 
-冒烟脚本伪造了 webserver、请求/响应对、LLM 流、React 与 slot 注册表，因此脱离 harness 也能跑——它们是
-唯一的自动化覆盖。真实渲染器里的行为是靠驱动应用窗口、采样按钮渲染像素来确认的，这也是 `docs/` 里有
+`test/` 下的三个脚本伪造了 webserver、请求/响应对、LLM 流、React 与 slot 注册表，因此脱离 harness 也能跑
+（`node test/smoke-*.mjs` 即可，不需要装任何依赖）——它们是唯一的自动化覆盖。`smoke-config.mjs` 里有一条
+反向断言：把每个字段的 `toJSON()` 剥掉后必须重新抛 `schema.toJSON is not a function`，也就是 0.4.5 那次
+启动崩溃的形状；改 `Config` 时别把它删了。`test/` 不在 `files` 里，不会进 tarball。
+
+真实渲染器里的行为是靠驱动应用窗口、采样按钮渲染像素来确认的，这也是 `docs/` 里有
 截图的原因。发版流程：升 `package.json`（以及本文、`README.en.md`、`docs/market/index.json` 里的版本号）→
-`npm pack` → 安装 tarball → 重跑两个冒烟脚本 → 在真窗口里再验一次增强。
+`npm pack` → 安装 tarball → 重跑三个冒烟脚本 → 在真窗口里再验一次增强。
 
 ## 常见问题
 

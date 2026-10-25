@@ -391,19 +391,24 @@ There is no build step: the host half is plain ESM, and the browser half is a si
 `window.__ModuleLoader__.load({ id, factory })` script.
 
 ```bash
-node --check index.js                  # host half parses
-node --check client.js                 # browser half parses
-node .tmp/smoke-host.mjs               # route: verbs, fences, limits, config clamping   -> HOST_SMOKE_OK
-node .tmp/smoke-client.cjs             # component: guards, labels, cache, config fetch -> CLIENT_SMOKE_OK
+node --check index.js              # host half parses
+node --check client.js             # browser half parses
+node test/smoke-config.mjs         # config: defaults, clamping, every field serializes -> CONFIG_SMOKE_OK
+node test/smoke-host.mjs           # route: verbs, fences, limits, config clamping      -> HOST_SMOKE_OK
+node test/smoke-client.cjs         # component: guards, labels, cache, config fetch    -> CLIENT_SMOKE_OK
 npm pack --pack-destination .tmp/dist  # then install the tarball (a version bump is required)
 ```
 
-The smoke scripts fake the webserver, the request/response pair, the LLM stream, React, and the
-slot registry, so they run with no harness attached — they are the only automated coverage.
+The three scripts under `test/` fake the webserver, the request/response pair, the LLM stream, React,
+and the slot registry, so they run with no harness and no dependencies — they are the only automated
+coverage. `smoke-config.mjs` also carries the reverse assertion: strip a field's `toJSON()` and it
+must throw `schema.toJSON is not a function` again, the shape of the 0.4.5 startup crash, so don't
+delete it while editing `Config`. `test/` is not in `files`, so it never lands in the tarball.
+
 Behaviour inside the real renderer was checked by driving the application window and sampling the
 button's rendered pixels, which is why `docs/` carries screenshots. Release loop: bump
 `package.json` (and the version strings here, in `README.en.md`, and in `docs/market/index.json`),
-`npm pack`, install the tarball, re-run both smoke scripts, then re-check one live enhance.
+`npm pack`, install the tarball, re-run all three smoke scripts, then re-check one live enhance.
 
 ## FAQ
 
