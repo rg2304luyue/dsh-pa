@@ -75,15 +75,15 @@ flowchart LR
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| 插件 | `0.4.3` |
+| 插件 | `0.4.5` |
 
 ## 安装
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.3.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.5.tgz
 
 # 然后在 DeepSeek Harness 里：
-plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.3.tgz 的绝对路径>
+plugin_manager  action=install_bundle  target=<./dist/dsh-pa-0.4.5.tgz 的绝对路径>
 ```
 
 **从 Git 源安装**（不需要 npm 包）：

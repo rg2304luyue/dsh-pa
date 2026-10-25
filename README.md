@@ -86,15 +86,15 @@ The plugin is one bundle with two halves, following the dsh plugin conventions:
 |---|---|
 | dsh | `>= 0.2.1-rc.1 < 0.3.0-0` |
 | Node | `>= 20` |
-| Plugin | `0.4.3` |
+| Plugin | `0.4.5` |
 
 ## Install
 
 ```bash
-npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.3.tgz
+npm pack --pack-destination ./dist          # -> dist/dsh-pa-0.4.5.tgz
 
 # then, in DeepSeek Harness:
-plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.3.tgz>
+plugin_manager  action=install_bundle  target=<absolute path to ./dist/dsh-pa-0.4.5.tgz>
 ```
 
 **From a Git source** — no npm package needed:

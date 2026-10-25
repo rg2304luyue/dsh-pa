@@ -25,6 +25,13 @@ window.__ModuleLoader__.load({
 
     const NS = 'dsh-pa';
     const ENDPOINT = '/api/dsh-pa/enhance';
+    /**
+     * Document-relative form of the same route. The web shell is served from
+     * `dsh-app://app/` (desktop) or from a deployment prefix (hosted), so a
+     * root-absolute path would leave that base; the shipped upload client strips the
+     * leading slash for the same reason (web-document-relative-app-routes).
+     */
+    const ROUTE = ENDPOINT.slice(1);
     const MAX_RECORDS = 32;
     const ERROR_VISIBLE_MS = 6000;
     const MAX_CACHE = 20;
@@ -203,7 +210,7 @@ window.__ModuleLoader__.load({
       // A failed or refused request leaves the local defaults in place.
       React.useEffect(() => {
         let live = true;
-        fetch(ENDPOINT, {
+        fetch(ROUTE, {
           method: 'GET',
           credentials: 'same-origin',
           headers: { 'x-dsh-pa': '1' },
@@ -306,7 +313,7 @@ window.__ModuleLoader__.load({
         }
         setBusy(true);
         try {
-          const response = await fetch(ENDPOINT, {
+          const response = await fetch(ROUTE, {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'content-type': 'application/json', 'x-dsh-pa': '1' },
