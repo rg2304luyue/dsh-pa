@@ -1,27 +1,27 @@
 {
   "format": 1,
   "title": {
-    "en": "dsh-pa plugin index",
-    "zh": "dsh-pa 插件索引"
+    "zh": "dsh-pa 插件索引",
+    "en": "dsh-pa plugin index"
   },
   "description": {
-    "en": "A static index served from GitHub Pages. Add its URL under Discover to install dsh-pa.",
-    "zh": "部署在 GitHub Pages 上的静态索引。在「发现」里添加它的 URL 即可安装 dsh-pa。"
+    "zh": "部署在 GitHub Pages 上的静态索引。在「发现」里添加它的 URL 即可安装 dsh-pa。",
+    "en": "A static index served from GitHub Pages. Add its URL under Discover to install dsh-pa."
   },
   "metadata": {
     "categories": {
       "composer": {
         "title": {
-          "en": "Composer",
-          "zh": "输入框"
+          "zh": "输入框",
+          "en": "Composer"
         }
       }
     },
     "labels": {
       "prompt": {
         "title": {
-          "en": "Prompt",
-          "zh": "提示词"
+          "zh": "提示词",
+          "en": "Prompt"
         }
       }
     }
@@ -30,12 +30,12 @@
     {
       "name": "dsh-pa",
       "title": {
-        "en": "Prompt Enhancer",
-        "zh": "提示词增强"
+        "zh": "提示词增强",
+        "en": "Prompt Enhancer"
       },
       "description": {
-        "en": "A diamond button in the composer that rewrites your draft into a precise prompt, and puts the original back when clicked again.",
-        "zh": "输入框里的菱形按钮：把草稿改写成规范提示词，再点一次还原原始输入。"
+        "zh": "输入框里的菱形按钮：把草稿改写成规范提示词，再点一次还原原始输入。",
+        "en": "A diamond button in the composer that rewrites your draft into a precise prompt, and puts the original back when clicked again."
       },
       "icon": "icon.svg",
       "author": "rg2304luyue",

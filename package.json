@@ -3,7 +3,7 @@
   "version": "0.4.5",
   "private": true,
   "type": "module",
-  "description": "Prompt enhancer for the DeepSeek Harness composer: rewrite a draft into a precise prompt, click again to restore it.",
+  "description": "输入框里的菱形按钮：一键把草稿改写成规范提示词，再点一次还原原始输入（DeepSeek Harness Web 界面插件）",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "README.zh-CN.md",
+    "README.en.md",
     "LICENSE"
   ],
   "engines": {
